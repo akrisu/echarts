@@ -1,18 +1,33 @@
 import ReactECharts from "echarts-for-react";
 import { useFetchRealTimeTransactions } from "./useFetchRealTimeTransactions";
 
-const options = {
-  grid: { top: 8, right: 8, bottom: 24, left: 36 },
+const getChartOptions = (xAxisData: unknown, yAxisData: Array<unknown>) => ({
   xAxis: {
     type: "category",
-    data: ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"],
+    data: xAxisData,
   },
-  yAxis: {
-    type: "value",
-  },
+  yAxis: [
+    {
+      type: "value",
+      name: "Quantity",
+      alignTicks: true,
+    },
+    {
+      type: "value",
+      name: "Price",
+      min: (value: { min: number; max: number }) => value.min - 100,
+    },
+  ],
   series: [
     {
-      data: [820, 932, 901, 934, 1290, 1330, 1320],
+      name: "Quantity",
+      data: [12, 25, 30, 45],
+      type: "bar",
+    },
+    {
+      data: yAxisData,
+      name: "Price",
+      yAxisIndex: 1,
       type: "line",
       smooth: true,
     },
@@ -20,14 +35,19 @@ const options = {
   tooltip: {
     trigger: "axis",
   },
-};
+});
 
 export const TransactionChart = () => {
-  const { isLoading } = useFetchRealTimeTransactions();
-
+  const { data, isLoading, isSuccess } = useFetchRealTimeTransactions();
+  console.log(data);
   if (isLoading) {
     <ReactECharts showLoading={isLoading} option={{}} />;
   }
 
-  return <ReactECharts option={options} />;
+  if (isSuccess) {
+    return (
+      <ReactECharts option={getChartOptions(data.xAxisData, data.yAxisData)} />
+    );
+  }
+  return null;
 };
