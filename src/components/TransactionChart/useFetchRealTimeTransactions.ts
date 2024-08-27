@@ -10,9 +10,12 @@ type Response = {
   isBestMatch: boolean;
 };
 
-type ChartData = {
-  yAxisData: Array<unknown>;
-  xAxisData: unknown;
+export type ChartData = {
+  yAxisData: {
+    quantities: Array<string>;
+    prices: Array<string>;
+  };
+  xAxisData: Array<unknown>;
 };
 
 export const useFetchRealTimeTransactions = () => {
@@ -25,10 +28,24 @@ export const useFetchRealTimeTransactions = () => {
 
       return response.json();
     },
-    select: (data) => ({
-      xAxisData: data.map((d) => new Date(d.time)),
-      yAxisData: data.map((d) => d.price),
-    }),
+    select: (data) =>
+      data.reduce(
+        (previous, current) => ({
+          yAxisData: {
+            quantities: [...previous.yAxisData.quantities, current.qty],
+            prices: [...previous.yAxisData.prices, current.price],
+          },
+          xAxisData: [...previous.xAxisData, current.time],
+        }),
+        {
+          yAxisData: {
+            quantities: [],
+            prices: [],
+          },
+          xAxisData: [],
+        } as ChartData
+      ),
+
     refetchInterval: 10000,
   });
   return query;

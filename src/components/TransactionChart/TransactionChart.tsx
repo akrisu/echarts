@@ -1,7 +1,13 @@
 import ReactECharts from "echarts-for-react";
-import { useFetchRealTimeTransactions } from "./useFetchRealTimeTransactions";
+import {
+  ChartData,
+  useFetchRealTimeTransactions,
+} from "./useFetchRealTimeTransactions";
 
-const getChartOptions = (xAxisData: unknown, yAxisData: Array<unknown>) => ({
+const getChartOptions = (
+  xAxisData: unknown,
+  yAxisData: ChartData["yAxisData"]
+) => ({
   xAxis: {
     type: "category",
     data: xAxisData,
@@ -21,11 +27,11 @@ const getChartOptions = (xAxisData: unknown, yAxisData: Array<unknown>) => ({
   series: [
     {
       name: "Quantity",
-      data: [12, 25, 30, 45],
+      data: yAxisData.quantities,
       type: "bar",
     },
     {
-      data: yAxisData,
+      data: yAxisData.prices,
       name: "Price",
       yAxisIndex: 1,
       type: "line",
