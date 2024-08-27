@@ -15,8 +15,32 @@ export type ChartData = {
     quantities: Array<string>;
     prices: Array<string>;
   };
-  xAxisData: Array<unknown>;
+  xAxisData: Array<string>;
 };
+
+const getTimeFromMiliseconds = (ms: number): string => {
+  const date = new Date(ms);
+
+  return `${date.getUTCHours()}:${date.getUTCMinutes()}:${date.getUTCSeconds()}.${date.getUTCMilliseconds()}`;
+};
+
+const mapResponseToChartData = (data: Array<Response>): ChartData =>
+  data.reduce(
+    (previous, current) => ({
+      yAxisData: {
+        quantities: [...previous.yAxisData.quantities, current.qty],
+        prices: [...previous.yAxisData.prices, current.price],
+      },
+      xAxisData: [...previous.xAxisData, getTimeFromMiliseconds(current.time)],
+    }),
+    {
+      yAxisData: {
+        quantities: [],
+        prices: [],
+      },
+      xAxisData: [],
+    } as ChartData
+  );
 
 export const useFetchRealTimeTransactions = () => {
   const query = useQuery<Array<Response>, Error, ChartData>({
@@ -28,25 +52,10 @@ export const useFetchRealTimeTransactions = () => {
 
       return response.json();
     },
-    select: (data) =>
-      data.reduce(
-        (previous, current) => ({
-          yAxisData: {
-            quantities: [...previous.yAxisData.quantities, current.qty],
-            prices: [...previous.yAxisData.prices, current.price],
-          },
-          xAxisData: [...previous.xAxisData, current.time],
-        }),
-        {
-          yAxisData: {
-            quantities: [],
-            prices: [],
-          },
-          xAxisData: [],
-        } as ChartData
-      ),
-
-    refetchInterval: 10000,
+    select: mapResponseToChartData,
+    refetchInterval: 2000,
+    retry: 2,
   });
+
   return query;
 };

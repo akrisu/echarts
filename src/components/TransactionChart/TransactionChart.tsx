@@ -5,7 +5,7 @@ import {
 } from "./useFetchRealTimeTransactions";
 
 const getChartOptions = (
-  xAxisData: unknown,
+  xAxisData: ChartData["xAxisData"],
   yAxisData: ChartData["yAxisData"]
 ) => ({
   xAxis: {
@@ -17,11 +17,17 @@ const getChartOptions = (
       type: "value",
       name: "Quantity",
       alignTicks: true,
+      axisLabel: {
+        formatter: (value: string) => Number(value).toFixed(3),
+      },
     },
     {
       type: "value",
       name: "Price",
       min: (value: { min: number; max: number }) => value.min - 100,
+      axisLabel: {
+        formatter: (value: string) => `${value} $`,
+      },
     },
   ],
   series: [
@@ -44,8 +50,13 @@ const getChartOptions = (
 });
 
 export const TransactionChart = () => {
-  const { data, isLoading, isSuccess } = useFetchRealTimeTransactions();
-  console.log(data);
+  const { data, isLoading, isSuccess, isError } =
+    useFetchRealTimeTransactions();
+
+  if (isError) {
+    return <>Error occured, please try again</>;
+  }
+
   if (isLoading) {
     <ReactECharts showLoading={isLoading} option={{}} />;
   }
